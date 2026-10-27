@@ -1,544 +1,630 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Autonomous B2B Supply Chain & Procurement Agent | Interactive Showcase</title>
-  <meta name="description" content="Autonomous B2B Supply Chain & Procurement Agent with deterministic 3-way matching, contract SLA penalty enforcement, OWASP BOLA defense, and real-time HITL control tower.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; upgrade-insecure-requests">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#05080f">
+  <title>ProcureAgent AI | Autonomous B2B Procurement Agent</title>
+  <meta name="description" content="Security-hardened autonomous B2B procurement agent: deterministic 3-way invoice matching, SLA penalty recovery, prompt-injection firewall, tamper-evident audit ledger and a human-in-the-loop control tower.">
+  <meta property="og:title" content="ProcureAgent AI: Autonomous B2B Procurement Agent">
+  <meta property="og:description" content="Deterministic 3-way matching, SLA penalty recovery, OWASP API Top 10 hardening and a tamper-evident audit ledger. Fully interactive demo.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://samuelhtampubolon.github.io/autonomous-b2b-procurement-agent/">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script src="assets/js/theme-init.js"></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/engine.js" defer></script>
+  <script src="assets/js/charts.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
 </head>
 <body>
+  <!-- Icon sprite -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6l7-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-github" viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l9.5 17h-19L12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4.5M12 17.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 15V6a2 2 0 012-2h8" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  </svg>
 
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <div class="nav-brand">
-      <span style="font-size: 1.5rem;">🛡️</span>
-      <span>ProcureAgent AI</span>
-      <div class="nav-badge">
-        <div class="pulse-dot"></div>
-        <span>Agent Live</span>
-      </div>
-    </div>
-    <div class="nav-links">
-      <a href="#simulator" class="nav-link">3-Way Match</a>
-      <a href="#hitl" class="nav-link">HITL Queue</a>
-      <a href="#roi" class="nav-link">ROI Modeler</a>
-      <a href="#rag" class="nav-link">Contract RAG</a>
-      <a href="#architecture" class="nav-link">Architecture</a>
-      <a href="#security" class="nav-link">Security</a>
-      <a href="https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent" target="_blank" class="btn-github">
-        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-        </svg>
-        <span>GitHub</span>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="navbar" id="top">
+    <div class="container nav-inner">
+      <a class="brand" href="#top" aria-label="ProcureAgent AI home">
+        <span class="brand-mark"><svg class="icon"><use href="#i-shield"/></svg></span>
+        <span class="brand-name">ProcureAgent<span class="brand-ai">AI</span></span>
+        <span class="status-pill"><span class="pulse-dot" aria-hidden="true"></span>v1.1 hardened</span>
       </a>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-  <header class="hero">
-    <div class="hero-pill">
-      <span>Enterprise Process Automation & Agentic Operations</span>
-    </div>
-    <h1 class="hero-title">Autonomous B2B Supply Chain<br>& Procurement Agent</h1>
-    <p class="hero-desc">
-      Eliminate 3-way matching bottlenecks, recover contracted SLA late-delivery penalties, and enforce multi-tenant BOLA cyber guardrails with deterministic sub-50ms execution.
-    </p>
-    <div class="hero-cta-group">
-      <a href="#simulator" class="btn-primary">⚡ Try Interactive 3-Way Match</a>
-      <a href="#hitl" class="btn-secondary">🧑‍💻 Inspect HITL Exception Queue</a>
-      <a href="#quickstart" class="btn-secondary">💻 Run Locally</a>
+      <nav class="nav-links" id="nav-links" aria-label="Sections">
+        <a href="#simulator">3-Way Match</a>
+        <a href="#workbench">HITL Queue</a>
+        <a href="#ledger">Audit Ledger</a>
+        <a href="#roi">ROI</a>
+        <a href="#rag">Contract RAG</a>
+        <a href="#security">Security</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#quickstart">Run Locally</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to light theme">
+          <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+          <svg class="icon icon-moon"><use href="#i-moon"/></svg>
+        </button>
+        <a class="btn btn-ghost btn-sm hide-sm" href="https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent" rel="noopener noreferrer" target="_blank">
+          <svg class="icon"><use href="#i-github"/></svg><span>GitHub</span>
+        </a>
+        <button class="icon-btn show-sm" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+          <svg class="icon"><use href="#i-menu"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- Hero Telemetry Stats -->
-  <section class="stats-grid">
-    <div class="glass-panel stat-card">
-      <div class="stat-label">Matching Latency (P95)</div>
-      <div class="stat-value">&lt; 45ms</div>
-      <div class="stat-sub">Deterministic zero-hallucination math</div>
-    </div>
-    <div class="glass-panel stat-card">
-      <div class="stat-label">Straight-Through Processing</div>
-      <div class="stat-value">82.4%</div>
-      <div class="stat-sub">Instant zero-touch invoice approval</div>
-    </div>
-    <div class="glass-panel stat-card">
-      <div class="stat-label">Net OpEx Savings (Monthly)</div>
-      <div class="stat-value">$38,450</div>
-      <div class="stat-sub">780 Analyst labor hours recovered</div>
-    </div>
-    <div class="glass-panel stat-card">
-      <div class="stat-label">Automation ROI Multiple</div>
-      <div class="stat-value">24.2x</div>
-      <div class="stat-sub">Governed by economic cost ledger</div>
-    </div>
-  </section>
-
-  <!-- Section 1: Interactive 3-Way Reconciliation Simulator -->
-  <section class="section" id="simulator">
-    <div class="section-header">
-      <div class="section-tag">Interactive Simulation</div>
-      <h2 class="section-title">Deterministic 3-Way Matching Engine</h2>
-      <p class="section-desc">
-        Experience real-time reconciliation across Purchase Orders (PO), Goods Receipts (GRN), and Invoices with automated SLA delay penalty deduction and policy guardrails.
-      </p>
-    </div>
-
-    <!-- Presets -->
-    <div style="text-align: center; margin-bottom: 24px;">
-      <span style="font-size:0.85rem; color:var(--text-dim); margin-right: 12px; font-weight:600;">Scenario Presets:</span>
-      <div class="preset-pills" style="display:inline-flex;">
-        <button class="preset-btn active" id="btn-preset-clean" onclick="loadPreset('clean')">Clean Match (Auto-Approved)</button>
-        <button class="preset-btn" id="btn-preset-priceCreep" onclick="loadPreset('priceCreep')">Price Creep +4.8% (HITL Trigger)</button>
-        <button class="preset-btn" id="btn-preset-lateDelivery" onclick="loadPreset('lateDelivery')">10 Days Late (SLA Penalty)</button>
-        <button class="preset-btn" id="btn-preset-highValue" onclick="loadPreset('highValue')">High Value $28.5k (HITL Trigger)</button>
-        <button class="preset-btn" id="btn-preset-qtyMismatch" onclick="loadPreset('qtyMismatch')">Qty Mismatch (HITL Trigger)</button>
-      </div>
-    </div>
-
-    <div class="simulator-layout">
-      <!-- Input Controls Panel -->
-      <div class="glass-panel" style="padding: 28px;">
-        <h3 style="margin-bottom: 20px; font-size:1.25rem;">Reconciliation Parameters</h3>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-          <div class="form-group">
-            <label class="form-label">Ordered Qty (PO)</label>
-            <input type="number" id="sim-ordered-qty" class="form-input" value="10" min="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Billed Qty (Invoice)</label>
-            <input type="number" id="sim-billed-qty" class="form-input" value="10" min="1">
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-          <div class="form-group">
-            <label class="form-label">Agreed Unit Price ($)</label>
-            <input type="number" id="sim-agreed-price" class="form-input" value="2850.00" step="10">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Billed Unit Price ($)</label>
-            <input type="number" id="sim-billed-price" class="form-input" value="2850.00" step="10">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <label class="form-label" style="margin:0;">Delivery Delay vs SLA</label>
-            <span id="sim-days-late-val" style="color:var(--accent-cyan); font-weight:700; font-size:0.85rem;">0 days</span>
-          </div>
-          <div class="slider-container">
-            <input type="range" id="sim-days-late" class="form-range" min="0" max="25" value="0">
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-          <div class="form-group">
-            <label class="form-label">Daily Penalty Rate (%)</label>
-            <input type="number" id="sim-penalty-rate" class="form-input" value="0.5" step="0.1">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Max Penalty Cap (%)</label>
-            <input type="number" id="sim-penalty-cap" class="form-input" value="15.0" step="1.0">
-          </div>
-        </div>
-      </div>
-
-      <!-- Live Telemetry & Output -->
-      <div class="glass-panel telemetry-panel">
-        <div>
-          <div id="sim-status-banner" class="telemetry-status-banner status-auto">
-            <div>
-              <div class="status-label">Routing Decision</div>
-              <div class="status-main" id="sim-status-main">AUTO APPROVED: STRAIGHT-THROUGH (STP)</div>
-            </div>
-            <span style="font-size: 1.8rem;">⚡</span>
-          </div>
-
-          <p id="sim-status-reason" style="font-size:0.88rem; margin-bottom:20px; color:#CBD5E1; line-height:1.5;">
-            Deterministic 3-way match passed: price variance, quantity, and lead-time SLAs verified within policy thresholds.
-          </p>
-
-          <table class="math-table">
-            <tr>
-              <td>Ordered Quantity vs Billed Quantity</td>
-              <td><span id="sim-out-ordered-qty">10 units</span> vs <span id="sim-out-billed-qty">10 units</span></td>
-            </tr>
-            <tr>
-              <td>Contract Price vs Billed Price</td>
-              <td><span id="sim-out-agreed-price">$2,850.00</span> vs <span id="sim-out-billed-price">$2,850.00</span></td>
-            </tr>
-            <tr>
-              <td>Price Variance Percentage</td>
-              <td id="sim-out-variance" style="color:var(--accent-emerald);">0.00%</td>
-            </tr>
-            <tr>
-              <td>Invoice Gross Subtotal</td>
-              <td id="sim-out-subtotal">$28,500.00</td>
-            </tr>
-            <tr>
-              <td>SLA Delay Lead Time</td>
-              <td id="sim-out-days-late">0 days late</td>
-            </tr>
-            <tr>
-              <td>Contract Penalty Rate Applied</td>
-              <td id="sim-out-penalty-pct">0.00%</td>
-            </tr>
-            <tr>
-              <td>Automated SLA Penalty Deduction</td>
-              <td id="sim-out-penalty-usd" style="color:var(--accent-amber);">$0.00</td>
-            </tr>
-            <tr class="highlight-row">
-              <td>Net Payable Commercial Settlement</td>
-              <td id="sim-out-final-payable">$28,500.00</td>
-            </tr>
-          </table>
-        </div>
-
-        <div style="font-size:0.75rem; color:var(--text-dim); text-align:right;">
-          Engine Latency: <strong>32.4ms</strong> | Enforced Policy: FR-02 & FR-04
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 2: Human-in-the-Loop Exception Workbench -->
-  <section class="section" id="hitl">
-    <div class="section-header">
-      <div class="section-tag">Human-In-The-Loop Operations</div>
-      <h2 class="section-title">Procurement Specialist Exception Workbench</h2>
-      <p class="section-desc">
-        Explore 50 realistic pre-seeded B2B invoices across multi-tenant partitions. Inspect commercial discrepancies, review supplier contract clauses, and record human decisions.
-      </p>
-    </div>
-
-    <div class="glass-panel hitl-container">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:16px;">
-        <div class="filter-tabs" style="border:none; margin:0; padding:0;">
-          <button class="filter-tab active" onclick="setHITLFilter('ALL', this)">All Transactions (50)</button>
-          <button class="filter-tab" onclick="setHITLFilter('HITL_PENDING', this)">⚠️ HITL Pending</button>
-          <button class="filter-tab" onclick="setHITLFilter('AUTO_APPROVED', this)">✓ Auto-Approved (STP)</button>
-          <button class="filter-tab" onclick="setHITLFilter('RESOLVED', this)">⚖️ Specialist Decided</button>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:12px;">
-          <input type="text" id="hitl-search-input" class="form-input" placeholder="Search invoice, vendor, item..." style="width:260px; padding:8px 14px; font-size:0.85rem;">
-          <span class="badge badge-green" id="hitl-count-badge">50 Items</span>
-        </div>
-      </div>
-
-      <div class="data-table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Invoice / PO</th>
-              <th>Vendor & Line Item</th>
-              <th>Subtotal</th>
-              <th>Price Var</th>
-              <th>SLA Penalty</th>
-              <th>Payable</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="hitl-table-body">
-            <!-- Rendered by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 3: Executive ROI & Unit Economics Modeler -->
-  <section class="section" id="roi">
-    <div class="section-header">
-      <div class="section-tag">CPO Economics</div>
-      <h2 class="section-title">Automation Unit Economics Modeler</h2>
-      <p class="section-desc">
-        Quantify the net financial return of deploying autonomous procurement agent workflows based on our codified mathematical governing equations.
-      </p>
-    </div>
-
-    <div class="roi-grid">
-      <!-- Sliders Card -->
-      <div class="glass-panel roi-card">
-        <h3 style="margin-bottom:24px; font-size:1.25rem;">Enterprise Volume Parameters</h3>
-
-        <div class="form-group">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <label class="form-label" style="margin:0;">Monthly Invoice Volume</label>
-            <span id="roi-volume-val" style="color:var(--accent-cyan); font-weight:700;">2,500 invoices / mo</span>
-          </div>
-          <div class="slider-container">
-            <input type="range" id="roi-volume-slider" class="form-range" min="200" max="20000" step="100" value="2500">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <label class="form-label" style="margin:0;">Baseline Manual Time per Invoice</label>
-            <span id="roi-minutes-val" style="color:var(--accent-cyan); font-weight:700;">18.0 mins / invoice</span>
-          </div>
-          <div class="slider-container">
-            <input type="range" id="roi-minutes-slider" class="form-range" min="5" max="35" step="0.5" value="18">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <label class="form-label" style="margin:0;">Procurement Specialist Blended Wage</label>
-            <span id="roi-wage-val" style="color:var(--accent-cyan); font-weight:700;">$45.00 / hr</span>
-          </div>
-          <div class="slider-container">
-            <input type="range" id="roi-wage-slider" class="form-range" min="25" max="100" step="5" value="45">
-          </div>
-        </div>
-
-        <div style="margin-top:20px; font-size:0.8rem; color:var(--text-dim); line-height:1.5;">
-          Includes model token consumption rate ($0.002 per 1k tokens) and local infrastructure overhead ($15/mo).
-        </div>
-      </div>
-
-      <!-- Results Card -->
-      <div class="glass-panel roi-card" style="display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <h3 style="margin-bottom:20px; font-size:1.25rem;">Economic Value Ledger</h3>
-          
-          <table class="math-table">
-            <tr>
-              <td>Gross Labor Value Saved</td>
-              <td id="roi-gross-saved" style="color:#38BDF8;">$31,624</td>
-            </tr>
-            <tr>
-              <td>AI Compute & Container Cost</td>
-              <td id="roi-ai-cost" style="color:var(--accent-rose);">-$17</td>
-            </tr>
-            <tr>
-              <td>Automated Contract SLA Recoveries</td>
-              <td id="roi-sla-recovered" style="color:var(--accent-amber);">+$29,750</td>
-            </tr>
-            <tr class="highlight-row">
-              <td>Net Monthly OpEx Benefit</td>
-              <td id="roi-net-monthly">$61,357</td>
-            </tr>
-            <tr>
-              <td>Annualized Enterprise Savings</td>
-              <td id="roi-net-annual" style="color:var(--accent-emerald);">$736,284 / year</td>
-            </tr>
-          </table>
-        </div>
-
-        <div class="roi-metric-highlight">
-          <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Automation Return on Investment</div>
-          <div class="roi-num-big" id="roi-multiple-display">36.1x ROI</div>
-          <div style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">Net benefit divided by total AI operating cost</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 4: Supplier Contract RAG Semantic Search -->
-  <section class="section" id="rag">
-    <div class="section-header">
-      <div class="section-tag">Semantic Intelligence</div>
-      <h2 class="section-title">Supplier Contract RAG Clause Explorer</h2>
-      <p class="section-desc">
-        Perform vector similarity search across supplier Master Service Agreements (MSAs), liquidated damages terms, volume discount tiers, and demurrage rules with zero cloud dependencies.
-      </p>
-    </div>
-
-    <div class="glass-panel" style="padding: 28px;">
-      <div style="display:flex; gap:12px; margin-bottom:16px;">
-        <input type="text" id="rag-search-input" class="form-input" placeholder="Type query e.g., 'What is the penalty for transit delays exceeding 24 hours?'" value="What is the penalty for transit delays?">
-        <button class="btn-primary" onclick="searchContracts()">Search RAG</button>
-      </div>
-
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
-        <span style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">Try queries:</span>
-        <button class="preset-btn" onclick="document.getElementById('rag-search-input').value='demurrage penalty cold chain delay'; searchContracts();">Cold chain demurrage</button>
-        <button class="preset-btn" onclick="document.getElementById('rag-search-input').value='volume rebate discount tier 500 units'; searchContracts();">Volume discount 500 units</button>
-        <button class="preset-btn" onclick="document.getElementById('rag-search-input').value='liquidated damages cnc machine unscheduled delay'; searchContracts();">CNC machinery damages</button>
-        <button class="preset-btn" onclick="document.getElementById('rag-search-input').value='prompt payment cash discount 10 days'; searchContracts();">Prompt payment 2/10 Net 30</button>
-      </div>
-
-      <div class="rag-cards-grid" id="rag-results-container">
-        <!-- Rendered by JavaScript -->
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 5: BPMN 2.0 Process & Enterprise Architecture -->
-  <section class="section" id="architecture">
-    <div class="section-header">
-      <div class="section-tag">BPMN 2.0 Architecture</div>
-      <h2 class="section-title">End-to-End Autonomous Workflow</h2>
-      <p class="section-desc">
-        Click any node in the orchestration pipeline to inspect its runtime behavior, security boundaries, and code implementation.
-      </p>
-    </div>
-
-    <div class="glass-panel" style="padding: 24px;">
-      <div class="bpmn-flow">
-        <div class="bpmn-node" id="bpmn-node-1" onclick="selectBPMNStep(1)">
-          <div style="font-size:1.5rem;">📥</div>
-          <div class="bpmn-node-title">1. Ingest API</div>
-        </div>
-        <div class="bpmn-arrow">➔</div>
-        <div class="bpmn-node" id="bpmn-node-2" onclick="selectBPMNStep(2)">
-          <div style="font-size:1.5rem;">🛡️</div>
-          <div class="bpmn-node-title">2. BOLA Check</div>
-        </div>
-        <div class="bpmn-arrow">➔</div>
-        <div class="bpmn-node active" id="bpmn-node-3" onclick="selectBPMNStep(3)">
-          <div style="font-size:1.5rem;">⚡</div>
-          <div class="bpmn-node-title">3. 3-Way Match</div>
-        </div>
-        <div class="bpmn-arrow">➔</div>
-        <div class="bpmn-node" id="bpmn-node-4" onclick="selectBPMNStep(4)">
-          <div style="font-size:1.5rem;">⚖️</div>
-          <div class="bpmn-node-title">4. SLA Penalty</div>
-        </div>
-        <div class="bpmn-arrow">➔</div>
-        <div class="bpmn-node" id="bpmn-node-5" onclick="selectBPMNStep(5)">
-          <div style="font-size:1.5rem;">🚦</div>
-          <div class="bpmn-node-title">5. Risk Route</div>
-        </div>
-        <div class="bpmn-arrow">➔</div>
-        <div class="bpmn-node" id="bpmn-node-6" onclick="selectBPMNStep(6)">
-          <div style="font-size:1.5rem;">📜</div>
-          <div class="bpmn-node-title">6. Audit Log</div>
-        </div>
-      </div>
-
-      <div style="margin-top:24px; padding:20px; background:#0B0F19; border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
-        <h4 id="bpmn-step-title" style="color:var(--accent-cyan); margin-bottom:8px;">3. Deterministic 3-Way Math Engine</h4>
-        <p id="bpmn-step-desc" style="font-size:0.9rem; color:#CBD5E1; margin-bottom:12px;">
-          Calculates quantity discrepancies and unit price variance against the contracted purchase order in sub-50ms with zero numerical hallucination.
+  <main id="main">
+    <!-- ================================================================ HERO -->
+    <section class="hero container" aria-labelledby="hero-title">
+      <div class="hero-copy reveal">
+        <span class="eyebrow"><svg class="icon"><use href="#i-lock"/></svg>Enterprise Process Automation &amp; Agentic Operations</span>
+        <h1 id="hero-title">Autonomous B2B <span class="grad-text">Procurement Agent</span></h1>
+        <p class="lede">
+          Clears 3-way invoice matching in milliseconds, recovers contracted SLA penalties, and routes every
+          risky exception to a human. Deterministic math, a prompt-injection firewall on untrusted vendor text,
+          and a tamper-evident audit ledger.
         </p>
-        <pre id="bpmn-step-code" style="font-family:var(--font-mono); font-size:0.8rem; background:#111827; padding:12px; border-radius:var(--radius-sm); color:#38BDF8; overflow-x:auto;">price_variance_pct = ((billed_price - agreed_price) / agreed_price) * 100.0
-subtotal_usd = billed_qty * billed_price</pre>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 6: Security & BOLA Attack Defense Simulator -->
-  <section class="section" id="security">
-    <div class="section-header">
-      <div class="section-tag">OWASP API Security</div>
-      <h2 class="section-title">BOLA Multi-Tenant Defense Verification</h2>
-      <p class="section-desc">
-        Demonstrates how our `get_owned_resource()` dependency blocks Broken Object Level Authorization (OWASP API1) attacks between competitor tenants.
-      </p>
-    </div>
-
-    <div class="glass-panel" style="padding: 28px;">
-      <div style="display:flex; justify-content:center; gap:16px; margin-bottom:24px;">
-        <button class="btn-primary" onclick="simulateBOLACheck('legit')">Test Tenant Alpha (Legitimate Owner)</button>
-        <button class="btn-secondary" style="border-color:var(--accent-rose);" onclick="simulateBOLACheck('attacker')">Simulate Hacker Beta (Cross-Tenant Attack)</button>
+        <div class="cta-row">
+          <a href="#simulator" class="btn btn-primary"><svg class="icon"><use href="#i-bolt"/></svg>Try the 3-way match</a>
+          <a href="#workbench" class="btn btn-ghost">Review the HITL queue</a>
+          <a href="#quickstart" class="btn btn-ghost">Run locally</a>
+        </div>
+        <ul class="trust-row" aria-label="Highlights">
+          <li><svg class="icon"><use href="#i-check"/></svg>OWASP API Top 10 (2023) controls</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>Hash-chained audit ledger</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>Zero cloud dependencies</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>57 automated tests</li>
+        </ul>
       </div>
 
-      <div id="bola-output-box" style="padding:20px; background:#0B0F19; border-radius:var(--radius-md); border:1px solid var(--border-subtle); max-width:700px; margin:0 auto;">
-        <!-- Filled by JavaScript -->
+      <div class="console glass reveal" aria-label="Live agent console (simulated)">
+        <div class="console-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="console-title">agent@procure-tower: reconcile --stream</span>
+          <span class="live-tag"><span class="pulse-dot" aria-hidden="true"></span>LIVE</span>
+        </div>
+        <ol class="console-body" id="console-body" aria-live="off"></ol>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Section 7: Quickstart & Local Runner -->
-  <section class="section" id="quickstart">
-    <div class="section-header">
-      <div class="section-tag">Developer Quickstart</div>
-      <h2 class="section-title">Run Locally with 1 Command</h2>
-      <p class="section-desc">
-        Deterministic startup with automated port conflict resolution, SQLite auto-seeding, and cross-platform compatibility across Windows, macOS, and Linux.
-      </p>
-    </div>
+    <section class="container kpi-grid" aria-label="Demo dataset headline metrics" id="kpis">
+      <article class="kpi glass reveal">
+        <span class="kpi-label">Straight-through processing</span>
+        <span class="kpi-value" id="kpi-stp">--</span>
+        <span class="kpi-sub" id="kpi-stp-sub">invoices cleared with zero touch</span>
+      </article>
+      <article class="kpi glass reveal">
+        <span class="kpi-label">SLA penalties recovered</span>
+        <span class="kpi-value" id="kpi-sla">--</span>
+        <span class="kpi-sub" id="kpi-sla-sub">deducted automatically</span>
+      </article>
+      <article class="kpi glass reveal">
+        <span class="kpi-label">Exceptions awaiting review</span>
+        <span class="kpi-value" id="kpi-hitl">--</span>
+        <span class="kpi-sub" id="kpi-hitl-sub">routed to specialists</span>
+      </article>
+      <article class="kpi glass reveal">
+        <span class="kpi-label">Audit ledger integrity</span>
+        <span class="kpi-value kpi-ok" id="kpi-ledger">--</span>
+        <span class="kpi-sub" id="kpi-ledger-sub">SHA-256 hash chain</span>
+      </article>
+    </section>
 
-    <div class="glass-panel" style="padding: 28px; max-width:800px; margin:0 auto;">
-      <pre style="font-family:var(--font-mono); font-size:0.85rem; background:#070B14; padding:18px; border-radius:var(--radius-md); color:#34D399; overflow-x:auto; line-height:1.7;">
-<span style="color:#64748B;"># 1. Clone the repository</span>
-git clone https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent.git
-cd autonomous-b2b-procurement-agent
-
-<span style="color:#64748B;"># 2. Install dependencies</span>
-pip install -r requirements.txt
-
-<span style="color:#64748B;"># 3. Deterministic preflight check (Seeds 50 invoices & validates healthz)</span>
-python run_local.py --check
-
-<span style="color:#64748B;"># 4. Launch FastAPI (127.0.0.1:8000) & Streamlit Control Tower (127.0.0.1:8501)</span>
-python run_local.py</pre>
-
-      <div style="display:flex; justify-content:center; margin-top:20px;">
-        <a href="https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent" target="_blank" class="btn-primary">
-          View on GitHub Repository ➔
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Modal Drawer for Invoice Inspection -->
-  <div class="modal-overlay" id="invoice-modal">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-        <h3 id="modal-title" style="font-size:1.3rem;">Invoice Audit Inspection</h3>
-        <button onclick="closeModal()" style="background:none; border:none; color:var(--text-dim); font-size:1.5rem; cursor:pointer;">&times;</button>
+    <!-- ================================================================ SIMULATOR -->
+    <section class="section container" id="simulator" aria-labelledby="sim-title">
+      <div class="section-head reveal">
+        <span class="section-tag">Interactive simulation</span>
+        <h2 id="sim-title">Deterministic 3-way matching engine</h2>
+        <p>The same rules as <code>matching_engine.py</code>, ported to your browser and parity-tested against Python. Change any field and watch the routing decision, penalty math and risk screen update instantly.</p>
       </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px; font-size:0.88rem;">
-        <div><strong>PO Number:</strong> <span id="modal-po"></span></div>
-        <div><strong>Vendor:</strong> <span id="modal-vendor"></span></div>
-        <div><strong>Item:</strong> <span id="modal-item"></span></div>
-        <div><strong>Ordered vs Billed:</strong> <span id="modal-ordered-qty"></span> / <span id="modal-billed-qty"></span></div>
-        <div><strong>PO Price vs Billed:</strong> <span id="modal-agreed-price"></span> / <span id="modal-billed-price"></span></div>
-        <div><strong>Price Variance:</strong> <span id="modal-variance" style="font-weight:700;"></span></div>
-        <div><strong>Subtotal:</strong> <span id="modal-subtotal"></span></div>
-        <div><strong>SLA Late Deduction:</strong> <span id="modal-sla-deduction" style="color:var(--accent-amber);"></span></div>
-        <div style="grid-column: span 2; border-top:1px solid var(--border-subtle); padding-top:8px;">
-          <strong>Final Payable Settlement:</strong> <span id="modal-payable" style="color:var(--accent-cyan); font-size:1.1rem; font-weight:700;"></span>
+      <div class="preset-row reveal" role="group" aria-label="Scenario presets" id="preset-row"></div>
+
+      <div class="sim-grid">
+        <form class="glass panel reveal" id="sim-form" novalidate>
+          <fieldset>
+            <legend><span class="step-num">1</span>Purchase order</legend>
+            <div class="field">
+              <label for="sim-vendor">Vendor contract</label>
+              <select id="sim-vendor"></select>
+              <small class="hint" id="sim-vendor-terms"></small>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="sim-ordered-qty">Ordered qty</label>
+                <input id="sim-ordered-qty" type="number" min="1" max="1000000" step="1" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label for="sim-agreed-price">Agreed unit price ($)</label>
+                <input id="sim-agreed-price" type="number" min="0.01" step="0.01" inputmode="decimal">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step-num">2</span>Goods receipt</legend>
+            <div class="field">
+              <label for="sim-days-late">Delivery delay <output id="sim-days-late-out" for="sim-days-late">0 days</output></label>
+              <input id="sim-days-late" type="range" min="0" max="40" step="1">
+            </div>
+            <label class="check">
+              <input type="checkbox" id="sim-settled">
+              <span>PO already has a settled invoice (duplicate-billing check)</span>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step-num">3</span>Vendor invoice</legend>
+            <div class="field-row">
+              <div class="field">
+                <label for="sim-billed-qty">Billed qty</label>
+                <input id="sim-billed-qty" type="number" min="1" max="1000000" step="1" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label for="sim-billed-price">Billed unit price ($)</label>
+                <input id="sim-billed-price" type="number" min="0.01" step="0.01" inputmode="decimal">
+              </div>
+            </div>
+            <div class="field">
+              <label for="sim-notes">Vendor remarks <span class="tag-untrusted">untrusted input</span></label>
+              <textarea id="sim-notes" rows="3" maxlength="2000" spellcheck="false"></textarea>
+            </div>
+          </fieldset>
+        </form>
+
+        <div class="glass panel sim-result reveal" aria-live="polite">
+          <div class="decision" id="sim-decision">
+            <svg class="icon decision-icon"><use href="#i-check" id="sim-decision-icon"/></svg>
+            <div>
+              <div class="decision-label" id="sim-decision-label">AUTO_APPROVED</div>
+              <div class="decision-sub" id="sim-decision-sub">Straight-through processing</div>
+            </div>
+          </div>
+
+          <ul class="checks" id="sim-checks" aria-label="Match checks"></ul>
+
+          <table class="kv-table" aria-label="Reconciliation breakdown">
+            <tbody>
+              <tr><th scope="row">Price variance</th><td id="out-variance"></td></tr>
+              <tr><th scope="row">Invoice subtotal</th><td id="out-subtotal"></td></tr>
+              <tr><th scope="row">SLA penalty applied</th><td id="out-penalty-pct"></td></tr>
+              <tr><th scope="row">SLA deduction</th><td id="out-penalty" class="txt-warn"></td></tr>
+              <tr class="kv-total"><th scope="row">Final payable</th><td id="out-payable"></td></tr>
+            </tbody>
+          </table>
+
+          <div class="reasons" id="sim-reasons"></div>
+
+          <div class="code-tabs" data-tabs>
+            <div class="tablist" role="tablist" aria-label="API view">
+              <button role="tab" aria-selected="true" aria-controls="sim-req" id="tab-sim-req" type="button">Request</button>
+              <button role="tab" aria-selected="false" aria-controls="sim-res" id="tab-sim-res" type="button" tabindex="-1">Response</button>
+              <button role="tab" aria-selected="false" aria-controls="sim-curl" id="tab-sim-curl" type="button" tabindex="-1">cURL</button>
+              <button class="copy-btn" type="button" data-copy-active aria-label="Copy code"><svg class="icon"><use href="#i-copy"/></svg>Copy</button>
+            </div>
+            <pre role="tabpanel" id="sim-req" aria-labelledby="tab-sim-req" tabindex="0"><code></code></pre>
+            <pre role="tabpanel" id="sim-res" aria-labelledby="tab-sim-res" tabindex="0" hidden><code></code></pre>
+            <pre role="tabpanel" id="sim-curl" aria-labelledby="tab-sim-curl" tabindex="0" hidden><code></code></pre>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div style="background:#1E293B; padding:14px; border-radius:var(--radius-sm); margin-bottom:16px;">
-        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--accent-amber); font-weight:700;">Exception Trigger Policy</div>
-        <p id="modal-reason" style="font-size:0.85rem; color:#F8FAFC; margin-top:4px;"></p>
+    <!-- ================================================================ HITL WORKBENCH -->
+    <section class="section container" id="workbench" aria-labelledby="wb-title">
+      <div class="section-head reveal">
+        <span class="section-tag">Human-in-the-loop operations</span>
+        <h2 id="wb-title">Exception review workbench</h2>
+        <p>50 seeded tenant_alpha invoices, routed by the engine above. Act as an Analyst, CPO or read-only Auditor: role checks and the $25k CPO sign-off rule are enforced exactly as in the API, and every decision is sealed into the audit ledger.</p>
       </div>
 
-      <div style="background:#1E293B; padding:14px; border-radius:var(--radius-sm); margin-bottom:20px;">
-        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--accent-cyan); font-weight:700;" id="modal-clause-title">Contract Clause Evidence</div>
-        <p id="modal-clause-body" style="font-size:0.85rem; color:#CBD5E1; margin-top:4px;"></p>
+      <div class="chart-grid">
+        <figure class="glass panel chart-card reveal">
+          <figcaption>
+            <span class="chart-title">Routing mix</span>
+            <span class="chart-sub" id="mix-sub"></span>
+          </figcaption>
+          <div id="chart-mix" class="chart"></div>
+        </figure>
+        <figure class="glass panel chart-card reveal">
+          <figcaption>
+            <span class="chart-title">Pending exposure by vendor</span>
+            <span class="chart-sub">Subtotal awaiting human review</span>
+          </figcaption>
+          <div id="chart-exposure" class="chart"></div>
+        </figure>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Reviewer Justification Notes</label>
-        <input type="text" id="modal-notes" class="form-input" placeholder="Enter reason for approval or rejection...">
+      <div class="glass panel reveal">
+        <div class="toolbar">
+          <div class="seg" role="tablist" aria-label="Filter by status" id="wb-filters"></div>
+          <div class="toolbar-right">
+            <label class="search">
+              <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+              <span class="sr-only">Search invoices</span>
+              <input type="search" id="wb-search" placeholder="Invoice, PO, vendor, item" maxlength="80" autocomplete="off">
+            </label>
+            <label class="select-inline">
+              <span>Acting as</span>
+              <select id="wb-role">
+                <option value="procurement_specialist">Analyst</option>
+                <option value="cpo">CPO</option>
+                <option value="auditor">Auditor (read-only)</option>
+              </select>
+            </label>
+            <button class="btn btn-ghost btn-sm" id="wb-export" type="button"><svg class="icon"><use href="#i-download"/></svg>CSV</button>
+            <button class="btn btn-ghost btn-sm" id="wb-reset" type="button">Reset demo</button>
+          </div>
+        </div>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Invoice table">
+          <table class="data-table" id="wb-table">
+            <thead>
+              <tr>
+                <th scope="col"><button type="button" data-sort="invoiceNumber">Invoice / PO</button></th>
+                <th scope="col"><button type="button" data-sort="vendor">Vendor / item</button></th>
+                <th scope="col" class="num"><button type="button" data-sort="subtotal">Subtotal</button></th>
+                <th scope="col" class="num"><button type="button" data-sort="variancePct">Variance</button></th>
+                <th scope="col" class="num"><button type="button" data-sort="slaPenalty">SLA deduction</button></th>
+                <th scope="col" class="num"><button type="button" data-sort="finalPayable">Payable</button></th>
+                <th scope="col"><button type="button" data-sort="status">Status</button></th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="wb-body"></tbody>
+          </table>
+          <p class="empty" id="wb-empty" hidden>No invoices match this filter.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ AUDIT LEDGER -->
+    <section class="section container" id="ledger" aria-labelledby="ledger-title">
+      <div class="section-head reveal">
+        <span class="section-tag">Non-repudiation</span>
+        <h2 id="ledger-title">Tamper-evident audit ledger</h2>
+        <p>Each agent or human action is sealed as <code>SHA-256(prev_hash ‖ canonical_json(entry))</code>. Rewrite a single historic row and every link after it breaks. Try it: the hashes below are computed live with the same encoding as <code>audit_ledger.py</code>.</p>
+      </div>
+      <div class="ledger-grid">
+        <div class="glass panel reveal ledger-status" id="ledger-status">
+          <div class="ledger-badge" id="ledger-badge">
+            <svg class="icon"><use href="#i-shield" id="ledger-badge-icon"/></svg>
+            <span id="ledger-badge-text">CHAIN INTACT</span>
+          </div>
+          <dl class="ledger-facts">
+            <div><dt>Sealed entries</dt><dd id="ledger-count">0</dd></div>
+            <div><dt>Verified</dt><dd id="ledger-verified">0</dd></div>
+            <div><dt>Head hash</dt><dd class="mono" id="ledger-head">-</dd></div>
+          </dl>
+          <p class="ledger-reason" id="ledger-reason"></p>
+          <div class="btn-col">
+            <button class="btn btn-primary" id="ledger-verify" type="button"><svg class="icon"><use href="#i-shield"/></svg>Verify chain</button>
+            <button class="btn btn-danger" id="ledger-tamper" type="button"><svg class="icon"><use href="#i-alert"/></svg>Simulate insider tampering</button>
+            <button class="btn btn-ghost" id="ledger-restore" type="button" disabled>Restore from backup</button>
+          </div>
+        </div>
+        <div class="glass panel reveal">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Latest ledger entries">
+            <table class="data-table ledger-table">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Action / actor</th>
+                  <th scope="col">Details</th>
+                  <th scope="col">prev_hash → entry_hash</th>
+                </tr>
+              </thead>
+              <tbody id="ledger-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ ROI -->
+    <section class="section container" id="roi" aria-labelledby="roi-title">
+      <div class="section-head reveal">
+        <span class="section-tag">CPO economics</span>
+        <h2 id="roi-title">Automation unit economics modeler</h2>
+        <p>Governed by the same equations as <code>roi_calculator.py</code>: zero-touch invoices save the full manual effort, HITL-assisted ones save 70%, and AI token spend plus platform cost is netted out.</p>
+      </div>
+      <div class="roi-grid">
+        <form class="glass panel reveal" id="roi-form" novalidate>
+          <div class="field"><label for="roi-volume">Monthly invoice volume <output id="roi-volume-out"></output></label><input id="roi-volume" type="range" min="200" max="20000" step="100" value="2500"></div>
+          <div class="field"><label for="roi-minutes">Manual minutes per invoice <output id="roi-minutes-out"></output></label><input id="roi-minutes" type="range" min="5" max="40" step="1" value="18"></div>
+          <div class="field"><label for="roi-wage">Analyst cost per hour <output id="roi-wage-out"></output></label><input id="roi-wage" type="range" min="20" max="120" step="5" value="45"></div>
+          <div class="field"><label for="roi-stp">Straight-through rate <output id="roi-stp-out"></output></label><input id="roi-stp" type="range" min="30" max="95" step="1" value="68"></div>
+          <div class="field"><label for="roi-late">Invoices delivered late <output id="roi-late-out"></output></label><input id="roi-late" type="range" min="0" max="40" step="1" value="12"></div>
+          <div class="field"><label for="roi-avg">Average invoice value <output id="roi-avg-out"></output></label><input id="roi-avg" type="range" min="500" max="25000" step="250" value="2500"></div>
+          <div class="field"><label for="roi-platform">AI platform cost (hosting, LLM, support) <output id="roi-platform-out"></output></label><input id="roi-platform" type="range" min="0" max="20000" step="100" value="1500"></div>
+          <p class="hint">Assumptions: ~450 tokens per invoice at $0.002 per 1k tokens; late invoices carry an average 4.5% contractual penalty (about 7.5 days at 0.6% per day).</p>
+        </form>
+        <div class="glass panel reveal roi-out">
+          <div class="roi-hero">
+            <div>
+              <span class="kpi-label">Net monthly benefit</span>
+              <span class="roi-big" id="roi-net"></span>
+              <span class="kpi-sub" id="roi-annual"></span>
+            </div>
+            <div class="roi-multiple">
+              <span class="kpi-label">ROI multiple</span>
+              <span class="roi-big grad-text" id="roi-multiple"></span>
+            </div>
+          </div>
+          <figure class="chart-card">
+            <figcaption><span class="chart-title">Monthly value bridge</span><span class="chart-sub">USD per month</span></figcaption>
+            <div id="chart-bridge" class="chart"></div>
+          </figure>
+          <figure class="chart-card">
+            <figcaption><span class="chart-title">Cumulative net benefit, first 12 months</span><span class="chart-sub">Hover for monthly values</span></figcaption>
+            <div id="chart-cumulative" class="chart"></div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ RAG -->
+    <section class="section container" id="rag" aria-labelledby="rag-title">
+      <div class="section-head reveal">
+        <span class="section-tag">Semantic contract intelligence</span>
+        <h2 id="rag-title">Supplier contract RAG clause explorer</h2>
+        <p>Local TF-IDF cosine similarity over supplier clauses, with no embedding API and no data leaving the machine. Queries pass through the same injection firewall before scoring.</p>
+      </div>
+      <div class="glass panel reveal">
+        <div class="rag-bar">
+          <label class="search search-lg">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <span class="sr-only">Search contract clauses</span>
+            <input type="search" id="rag-input" maxlength="500" autocomplete="off" placeholder="e.g. penalty for transit delays exceeding 24 hours">
+          </label>
+          <label class="select-inline"><span>Top</span>
+            <select id="rag-topk"><option>3</option><option selected>5</option><option>8</option></select>
+          </label>
+        </div>
+        <div class="chip-row" id="rag-suggestions" aria-label="Example queries"></div>
+        <div class="rag-results" id="rag-results" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- ================================================================ SECURITY -->
+    <section class="section container" id="security" aria-labelledby="sec-title">
+      <div class="section-head reveal">
+        <span class="section-tag">Defense in depth</span>
+        <h2 id="sec-title">Security architecture</h2>
+        <p>Every control below is implemented in the API and covered by an automated test. Use the labs to see them work.</p>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
-        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-        <button class="btn-sm-reject" style="padding:10px 20px; font-size:0.9rem;" onclick="decideFromModal('REJECT')">Reject Invoice</button>
-        <button class="btn-primary" style="padding:10px 24px; font-size:0.9rem;" onclick="decideFromModal('APPROVE')">Approve Payment</button>
-      </div>
-    </div>
-  </div>
+      <div class="glass panel reveal" data-tabs>
+        <div class="tablist tablist-lg" role="tablist" aria-label="Security labs">
+          <button role="tab" aria-selected="true" aria-controls="sec-controls" id="tab-sec-controls" type="button">OWASP controls</button>
+          <button role="tab" aria-selected="false" aria-controls="sec-firewall" id="tab-sec-firewall" type="button" tabindex="-1">Prompt-injection firewall</button>
+          <button role="tab" aria-selected="false" aria-controls="sec-bola" id="tab-sec-bola" type="button" tabindex="-1">BOLA probe</button>
+          <button role="tab" aria-selected="false" aria-controls="sec-auth" id="tab-sec-auth" type="button" tabindex="-1">Auth &amp; lockout</button>
+        </div>
 
-  <!-- Footer -->
+        <div role="tabpanel" id="sec-controls" aria-labelledby="tab-sec-controls" tabindex="0">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="OWASP API Top 10 controls">
+            <table class="data-table controls-table">
+              <thead><tr><th scope="col">Risk</th><th scope="col">Control in this codebase</th><th scope="col">Verified by</th></tr></thead>
+              <tbody id="controls-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div role="tabpanel" id="sec-firewall" aria-labelledby="tab-sec-firewall" tabindex="0" hidden>
+          <div class="lab-grid">
+            <div>
+              <div class="field">
+                <label for="fw-input">Untrusted vendor text <span class="tag-untrusted">attacker controlled</span></label>
+                <textarea id="fw-input" rows="6" maxlength="2000" spellcheck="false"></textarea>
+              </div>
+              <div class="chip-row" id="fw-samples" aria-label="Attack samples"></div>
+            </div>
+            <div aria-live="polite">
+              <div class="decision decision-sm" id="fw-decision"></div>
+              <div class="chip-row" id="fw-flags"></div>
+              <h3 class="lab-h">Sanitized text passed downstream</h3>
+              <pre class="code-block" id="fw-output"><code></code></pre>
+              <p class="hint">Pipeline: NFKC normalization → strip control, zero-width and bidi-override characters → redact instruction overrides, role spoofing, chat-template tokens, persona and approval overrides, secret exfiltration and markup. Any flag forces human review.</p>
+            </div>
+          </div>
+        </div>
+
+        <div role="tabpanel" id="sec-bola" aria-labelledby="tab-sec-bola" tabindex="0" hidden>
+          <div class="lab-grid">
+            <div>
+              <div class="field">
+                <label for="bola-user">Authenticated caller</label>
+                <select id="bola-user">
+                  <option value="analyst_alpha">analyst_alpha (tenant_alpha)</option>
+                  <option value="hacker_beta" selected>hacker_beta (tenant_beta)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="bola-id">Target invoice id</label>
+                <input id="bola-id" type="number" min="1" max="2147483647" value="1">
+                <small class="hint">IDs 1-50 belong to tenant_alpha, 51-55 to tenant_beta.</small>
+              </div>
+              <button class="btn btn-primary" id="bola-run" type="button">Send GET /api/v1/invoices/{id}</button>
+            </div>
+            <pre class="code-block" id="bola-output" aria-live="polite"><code></code></pre>
+          </div>
+        </div>
+
+        <div role="tabpanel" id="sec-auth" aria-labelledby="tab-sec-auth" tabindex="0" hidden>
+          <div class="lab-grid">
+            <div>
+              <h3 class="lab-h">Access token claims</h3>
+              <pre class="code-block" id="jwt-claims"><code></code></pre>
+              <ul class="checklist" id="jwt-checks"></ul>
+            </div>
+            <div>
+              <h3 class="lab-h">Credential-stuffing lockout</h3>
+              <p class="hint">Every failure path returns the same generic 401 after a full bcrypt comparison. After 5 failures in 15 minutes the account locks, and even the correct password is refused.</p>
+              <div class="btn-row">
+                <button class="btn btn-danger" id="auth-fail" type="button">Attempt wrong password</button>
+                <button class="btn btn-ghost" id="auth-good" type="button">Attempt correct password</button>
+                <button class="btn btn-ghost" id="auth-reset" type="button">Reset</button>
+              </div>
+              <div class="meter" aria-hidden="true"><span id="auth-meter"></span></div>
+              <pre class="code-block" id="auth-output" aria-live="polite"><code></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ ARCHITECTURE -->
+    <section class="section container" id="architecture" aria-labelledby="arch-title">
+      <div class="section-head reveal">
+        <span class="section-tag">BPMN 2.0 orchestration</span>
+        <h2 id="arch-title">End-to-end request lifecycle</h2>
+        <p>Select a stage to inspect the implementation.</p>
+      </div>
+      <ol class="flow reveal" id="flow" aria-label="Processing stages"></ol>
+      <div class="glass panel reveal flow-detail" aria-live="polite">
+        <h3 id="flow-title"></h3>
+        <p id="flow-desc"></p>
+        <pre class="code-block"><code id="flow-code"></code></pre>
+      </div>
+      <ul class="stack-grid reveal" id="stack-grid" aria-label="Technology stack"></ul>
+    </section>
+
+    <!-- ================================================================ QUICKSTART -->
+    <section class="section container" id="quickstart" aria-labelledby="qs-title">
+      <div class="section-head reveal">
+        <span class="section-tag">Developer quickstart</span>
+        <h2 id="qs-title">Run the full stack locally</h2>
+        <p>FastAPI on <code>127.0.0.1:8000</code> and the Streamlit control tower on <code>127.0.0.1:8501</code>, bound to loopback only. A random signing key is generated on first run.</p>
+      </div>
+      <div class="qs-grid">
+        <div class="glass panel reveal" data-tabs>
+          <div class="tablist" role="tablist" aria-label="Platform">
+            <button role="tab" aria-selected="true" aria-controls="qs-win" id="tab-qs-win" type="button">Windows</button>
+            <button role="tab" aria-selected="false" aria-controls="qs-nix" id="tab-qs-nix" type="button" tabindex="-1">macOS / Linux</button>
+            <button role="tab" aria-selected="false" aria-controls="qs-docker" id="tab-qs-docker" type="button" tabindex="-1">Docker</button>
+            <button class="copy-btn" type="button" data-copy-active aria-label="Copy commands"><svg class="icon"><use href="#i-copy"/></svg>Copy</button>
+          </div>
+          <pre role="tabpanel" id="qs-win" aria-labelledby="tab-qs-win" tabindex="0"><code>git clone https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent.git
+cd autonomous-b2b-procurement-agent
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+
+python run_local.py --check   # DB, seed, probes, headers, audit chain
+python run_local.py           # API :8000 + Control Tower :8501
+pytest -q                     # full test suite</code></pre>
+          <pre role="tabpanel" id="qs-nix" aria-labelledby="tab-qs-nix" tabindex="0" hidden><code>git clone https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent.git
+cd autonomous-b2b-procurement-agent
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements-dev.txt
+
+make check      # DB, seed, probes, headers, audit chain
+make run        # API :8000 + Control Tower :8501
+make test       # full test suite
+make security   # bandit + pip-audit</code></pre>
+          <pre role="tabpanel" id="qs-docker" aria-labelledby="tab-qs-docker" tabindex="0" hidden><code># Production mode refuses to start without a strong key
+export SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(64))')"
+
+# Optional: seed demo personas with your own passwords
+export DEMO_MODE=true DEMO_ANALYST_PASSWORD='...' DEMO_CPO_PASSWORD='...' \
+       DEMO_AUDITOR_PASSWORD='...' DEMO_BETA_PASSWORD='...'
+
+docker compose up --build   # non-root, read-only FS, no-new-privileges</code></pre>
+        </div>
+        <div class="glass panel reveal">
+          <h3 class="lab-h">Local demo personas</h3>
+          <div class="table-wrap">
+            <table class="data-table compact">
+              <thead><tr><th scope="col">Username</th><th scope="col">Tenant</th><th scope="col">Role</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">analyst_alpha</td><td>tenant_alpha</td><td>Specialist: reconcile and decide</td></tr>
+                <tr><td class="mono">cpo_alpha</td><td>tenant_alpha</td><td>CPO: approvals above $25k, audit</td></tr>
+                <tr><td class="mono">auditor_alpha</td><td>tenant_alpha</td><td>Auditor: read-only, audit</td></tr>
+                <tr><td class="mono">hacker_beta</td><td>tenant_beta</td><td>Cross-tenant attacker persona</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="hint">Default passwords exist only for local development and are listed in the README. Production requires <code>DEMO_MODE=true</code> plus explicit <code>DEMO_*_PASSWORD</code> values, or no demo accounts are created.</p>
+          <h3 class="lab-h">Key endpoints</h3>
+          <ul class="endpoint-list" id="endpoint-list"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
   <footer class="footer">
-    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:12px;">
-      <span style="font-size:1.2rem;">🛡️</span>
-      <span style="font-weight:700; font-family:var(--font-display);">Autonomous B2B Procurement Agent</span>
+    <div class="container footer-inner">
+      <div>
+        <div class="brand brand-foot"><span class="brand-mark"><svg class="icon"><use href="#i-shield"/></svg></span><span class="brand-name">ProcureAgent<span class="brand-ai">AI</span></span></div>
+        <p class="hint">Built by Samuel H. Tampubolon. This page is a static, client-side simulation: no data is sent anywhere.</p>
+      </div>
+      <nav class="footer-links" aria-label="Project links">
+        <a href="https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent" rel="noopener noreferrer" target="_blank">Repository</a>
+        <a href="https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent/blob/main/SECURITY.md" rel="noopener noreferrer" target="_blank">Security policy</a>
+        <a href="https://github.com/samuelhtampubolon/autonomous-b2b-procurement-agent/blob/main/ADR.md" rel="noopener noreferrer" target="_blank">Architecture decisions</a>
+        <a href="#top">Back to top</a>
+      </nav>
     </div>
-    <p class="footer-copy">
-      Engineered by <strong>Samuel H. Tampubolon</strong> &bull; 
-      <a href="https://github.com/samuelhtampubolon" target="_blank">@samuelhtampubolon</a> &bull;
-      Released under the MIT License
-    </p>
   </footer>
 
-  <script src="app.js"></script>
+  <!-- Invoice review drawer -->
+  <dialog class="drawer" id="drawer" aria-labelledby="drawer-title">
+    <div class="drawer-inner">
+      <header class="drawer-head">
+        <div>
+          <span class="section-tag" id="drawer-status"></span>
+          <h3 id="drawer-title"></h3>
+          <p class="hint" id="drawer-sub"></p>
+        </div>
+        <button class="icon-btn" type="button" id="drawer-close" aria-label="Close review panel"><svg class="icon"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="drawer-body">
+        <div class="three-way" id="drawer-3way"></div>
+        <h4>Routing reasons</h4>
+        <ul class="reason-list" id="drawer-reasons"></ul>
+        <div id="drawer-flags" class="chip-row"></div>
+        <h4>Vendor remarks (sanitized)</h4>
+        <pre class="code-block" id="drawer-notes"><code></code></pre>
+        <h4>Contract evidence (RAG top match)</h4>
+        <blockquote class="evidence" id="drawer-evidence"></blockquote>
+        <div id="drawer-decision-area">
+          <label for="drawer-note">Decision justification</label>
+          <textarea id="drawer-note" rows="3" maxlength="1000" placeholder="Recorded in the audit ledger"></textarea>
+          <p class="policy-note" id="drawer-policy" role="status"></p>
+          <div class="btn-row">
+            <button class="btn btn-success" type="button" id="drawer-approve"><svg class="icon"><use href="#i-check"/></svg>Approve payment</button>
+            <button class="btn btn-danger" type="button" id="drawer-reject"><svg class="icon"><use href="#i-x"/></svg>Reject invoice</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast-stack" id="toasts" role="status" aria-live="polite"></div>
+  <div class="chart-tip" id="chart-tip" role="tooltip" hidden></div>
 </body>
 </html>
