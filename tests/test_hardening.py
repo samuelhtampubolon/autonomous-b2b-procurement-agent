@@ -8,6 +8,7 @@ non-reflective validation errors, and the tamper-evident audit ledger.
 
 from __future__ import annotations
 
+import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -83,6 +84,50 @@ def _reconcile(po: str, headers=ANALYST, **overrides):
 # Authentication (OWASP API2)
 # ---------------------------------------------------------------------------
 
+def test_no_hardcoded_secrets_in_repository():
+    """Regression guard: v1.0 shipped a JWT key and demo passwords in source control."""
+    import subprocess  # nosec B404
+    from pathlib import Path
+
+    from src.config import is_known_leaked_secret
+
+    root = Path(__file__).resolve().parent.parent
+    try:
+        tracked = subprocess.run(  # nosec B603 B607 - fixed argv
+            ["git", "ls-files"], cwd=root, capture_output=True, text=True, check=True
+        ).stdout.split()
+    except (OSError, subprocess.CalledProcessError):
+        pytest.skip("git not available")
+    old_defaults = ["password" + "123", "cpo" + "securepass", "evil" + "pass123", "auditor" + "pass123"]
+    for rel in tracked:
+        path = root / rel
+        if path.suffix in {".png", ".svg", ".ico"} or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for token in old_defaults:
+            assert token not in text, f"{rel} contains a retired default password"
+        for word in text.replace('"', " ").replace("'", " ").replace("=", " ").split():
+            assert len(word) < 32 or not is_known_leaked_secret(word), f"{rel} contains a leaked signing key"
+
+
+def test_demo_users_rotate_away_from_legacy_passwords():
+    from src.database import SessionLocal
+    from src.models import User
+    from src.seed_data import _ensure_demo_users
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.username == "analyst_alpha").first()
+        user.hashed_password = get_password_hash("legacy-" + "default")
+        db.commit()
+        _ensure_demo_users(db)
+        db.refresh(user)
+        assert not verify_password("legacy-" + "default", user.hashed_password)
+        assert verify_password(os.environ["DEMO_ANALYST_PASSWORD"], user.hashed_password)
+    finally:
+        db.close()
+
+
 def test_password_hashing_roundtrip_and_unknown_user():
     hashed = get_password_hash("correct horse battery")
     assert hashed.startswith("$2b$12$")
@@ -92,7 +137,7 @@ def test_password_hashing_roundtrip_and_unknown_user():
 
 
 def test_real_login_issues_token_with_hardened_claims():
-    res = client.post("/api/v1/auth/token", json={"username": "analyst_alpha", "password": "password123"})
+    res = client.post("/api/v1/auth/token", json={"username": "analyst_alpha", "password": os.environ["DEMO_ANALYST_PASSWORD"]})
     assert res.status_code == 200
     token = res.json()["access_token"]
     claims = jwt.decode(token, options={"verify_signature": False})
@@ -157,7 +202,7 @@ def test_account_lockout_after_repeated_failures(monkeypatch):
         res = client.post("/api/v1/auth/token", json={"username": "cpo_alpha", "password": "wrong-password"})
         assert res.status_code == 401
     # Correct password is now refused with the same generic message (no lockout oracle).
-    res = client.post("/api/v1/auth/token", json={"username": "cpo_alpha", "password": "cposecurepass"})
+    res = client.post("/api/v1/auth/token", json={"username": "cpo_alpha", "password": os.environ["DEMO_CPO_PASSWORD"]})
     assert res.status_code == 401
     assert res.json()["detail"] == "Invalid username or password"
 

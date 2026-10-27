@@ -8,6 +8,7 @@ with insecure defaults.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import secrets
@@ -24,15 +25,20 @@ SECRET_KEY_FILE: Path = DATA_DIR / ".jwt_secret"
 # Minimum entropy for the HS256 signing key (RFC 7518 section 3.2: key >= hash output size).
 MIN_SECRET_KEY_BYTES: int = 32
 
-# Secrets that were published in earlier revisions of this repository. They are public
-# knowledge and must never be accepted as a signing key.
-KNOWN_LEAKED_SECRETS = frozenset(
+# SHA-256 digests of signing keys that are public knowledge (including the key published
+# in v1.0 of this repository). Only digests are stored so the leaked values never appear
+# in the source again; a configured key matching any digest is refused at startup.
+KNOWN_LEAKED_SECRET_SHA256 = frozenset(
     {
-        "b2b-procurement-agent-enterprise-secret-key-hs256-deterministic-2026",
-        "changeme",
-        "secret",
+        "6d9eb221a59ed7bd8863418b0a0362934bb7ba66ad5fcb7d967ed00323708a2f",
+        "057ba03d6c44104863dc7361fe4578965d1887360f90a0895882e58a6248fc86",
+        "2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b",
     }
 )
+
+
+def is_known_leaked_secret(value: str) -> bool:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest() in KNOWN_LEAKED_SECRET_SHA256
 
 logger = logging.getLogger("procurement.config")
 
@@ -80,7 +86,7 @@ def _resolve_secret_key(env: str) -> str:
     configured = os.getenv("SECRET_KEY", "").strip()
 
     if configured:
-        if configured in KNOWN_LEAKED_SECRETS:
+        if is_known_leaked_secret(configured):
             raise ConfigurationError(
                 "SECRET_KEY uses a publicly known value. Generate a new one with: "
                 "python -c \"import secrets; print(secrets.token_urlsafe(64))\""
