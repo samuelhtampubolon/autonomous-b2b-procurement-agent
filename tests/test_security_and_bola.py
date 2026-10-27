@@ -93,7 +93,7 @@ def test_owasp_api2_broken_authentication():
     # 3. Invalid credentials on login
     login_res = client.post(
         "/api/v1/auth/token",
-        json={"username": "non_existent_user", "password": "wrongpassword123"},
+        json={"username": "non_existent_user", "password": "not-the-right-pass"},
     )
     assert login_res.status_code == 401
     assert "Invalid username or password" in login_res.json()["detail"]

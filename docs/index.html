@@ -568,7 +568,7 @@ docker compose up --build   # non-root, read-only FS, no-new-privileges</code></
               </tbody>
             </table>
           </div>
-          <p class="hint">Default passwords exist only for local development and are listed in the README. Production requires <code>DEMO_MODE=true</code> plus explicit <code>DEMO_*_PASSWORD</code> values, or no demo accounts are created.</p>
+          <p class="hint">No password ships with the code: each installation generates random persona passwords in <code>data/.demo_credentials.json</code> (mode 600, git-ignored). Production requires <code>DEMO_MODE=true</code> plus explicit <code>DEMO_*_PASSWORD</code> values, or no demo accounts are created.</p>
           <h3 class="lab-h">Key endpoints</h3>
           <ul class="endpoint-list" id="endpoint-list"></ul>
         </div>

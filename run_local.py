@@ -106,6 +106,12 @@ def run_preflight_check() -> bool:
         finally:
             db.close()
 
+        from src.config import settings
+        from src.demo_credentials import CREDENTIALS_FILE
+
+        if settings.DEMO_MODE and not settings.is_production:
+            print(f"[OK] Demo persona passwords (per install, git-ignored): {CREDENTIALS_FILE}")
+
         print("=" * 70)
         print("ALL PREFLIGHT CHECKS PASSED DETERMINISTICALLY (100% HEALTHY)!")
         print("=" * 70)

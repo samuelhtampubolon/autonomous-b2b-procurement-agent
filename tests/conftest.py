@@ -16,6 +16,9 @@ _TEST_DIR = Path(tempfile.mkdtemp(prefix="procurement-tests-"))
 os.environ["DATABASE_URL"] = f"sqlite:///{(_TEST_DIR / 'test.db').as_posix()}"
 os.environ.setdefault("SECRET_KEY", secrets.token_urlsafe(48))
 os.environ.setdefault("ENV", "test")
+# Random per-run demo passwords: no credential is hardcoded anywhere in the test suite.
+for _var in ("DEMO_ANALYST_PASSWORD", "DEMO_CPO_PASSWORD", "DEMO_AUDITOR_PASSWORD", "DEMO_BETA_PASSWORD"):
+    os.environ[_var] = secrets.token_urlsafe(18)
 
 import pytest  # noqa: E402
 

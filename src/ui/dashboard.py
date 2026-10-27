@@ -15,9 +15,11 @@ Security notes:
 from __future__ import annotations
 
 import html
+import json
 import os
 import time
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import plotly.graph_objects as go
@@ -124,13 +126,36 @@ def esc(value: Any) -> str:
     return html.escape(str(value), quote=True)
 
 
-# Local demo personas (seeded only when DEMO_MODE is on). Passwords can be overridden
-# with the same DEMO_*_PASSWORD variables the API uses for seeding.
+# Demo personas. Passwords are never hardcoded: they come from the DEMO_*_PASSWORD
+# environment variables, or from the per-installation file that the API generates on
+# first start (data/.demo_credentials.json, owner read/write only, git-ignored).
+DEMO_PERSONAS = [
+    ("Analyst (Tenant Alpha)", "analyst_alpha", "DEMO_ANALYST_PASSWORD"),
+    ("CPO (Tenant Alpha)", "cpo_alpha", "DEMO_CPO_PASSWORD"),
+    ("Auditor (Tenant Alpha, read-only)", "auditor_alpha", "DEMO_AUDITOR_PASSWORD"),
+    ("Attacker (Tenant Beta)", "hacker_beta", "DEMO_BETA_PASSWORD"),
+]
+CREDENTIALS_FILE = Path(__file__).resolve().parents[2] / "data" / ".demo_credentials.json"
+
+
+def load_demo_passwords() -> Dict[str, str]:
+    stored: Dict[str, str] = {}
+    try:
+        stored = json.loads(CREDENTIALS_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        stored = {}
+    passwords = {}
+    for _, username, env_var in DEMO_PERSONAS:
+        value = os.getenv(env_var) or stored.get(username)
+        if isinstance(value, str) and value:
+            passwords[username] = value
+    return passwords
+
+
+DEMO_PASSWORDS = load_demo_passwords()
 PRESETS = {
-    "Analyst (Tenant Alpha)": ("analyst_alpha", os.getenv("DEMO_ANALYST_PASSWORD", "password123")),
-    "CPO (Tenant Alpha)": ("cpo_alpha", os.getenv("DEMO_CPO_PASSWORD", "cposecurepass")),
-    "Auditor (Tenant Alpha, read-only)": ("auditor_alpha", os.getenv("DEMO_AUDITOR_PASSWORD", "auditorpass123")),
-    "Attacker (Tenant Beta)": ("hacker_beta", os.getenv("DEMO_BETA_PASSWORD", "evilpass123")),
+    label: (username, DEMO_PASSWORDS.get(username, ""))
+    for label, username, _ in DEMO_PERSONAS
 }
 
 user_choice = st.sidebar.selectbox("Active Persona / Tenant", list(PRESETS.keys()))
@@ -139,6 +164,8 @@ username, password = PRESETS[user_choice]
 
 def get_auth_token(user: str, pwd: str) -> Optional[Dict[str, Any]]:
     """Return a valid token for this browser session, logging in again only when needed."""
+    if not pwd:
+        return None
     tokens: Dict[str, Dict[str, Any]] = st.session_state.setdefault("tokens", {})
     cached = tokens.get(user)
     if cached and cached["expires_at"] > time.time() + 60:
@@ -166,7 +193,13 @@ if token_data:
     st.sidebar.success(f"Tenant: `{token_data['tenant_id']}`\nRole: `{token_data['role']}`")
     headers = {"Authorization": f"Bearer {token_data['access_token']}"}
 else:
-    st.sidebar.error("Could not authenticate with local API server. Ensure API is running at 127.0.0.1:8000.")
+    if not password:
+        st.sidebar.error(
+            "No demo password found. Start the API once (python run_local.py) to generate "
+            "data/.demo_credentials.json, or set the DEMO_*_PASSWORD environment variables."
+        )
+    else:
+        st.sidebar.error("Could not authenticate with local API server. Ensure API is running at 127.0.0.1:8000.")
     headers = {}
 
 navigation = st.sidebar.radio(

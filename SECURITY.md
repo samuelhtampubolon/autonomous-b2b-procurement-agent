@@ -12,7 +12,7 @@ You can expect an acknowledgement within 5 business days.
 | Version | Supported |
 | :--- | :--- |
 | 1.1.x | Yes |
-| 1.0.x | No: it shipped a hardcoded JWT signing key. Upgrade and rotate any key you deployed. |
+| 1.0.x | No: it shipped a hardcoded JWT signing key and documented default passwords. Upgrade; the key is refused at startup and old demo passwords are rotated automatically. |
 
 ## Threat model (summary)
 
@@ -32,8 +32,13 @@ You can expect an acknowledgement within 5 business days.
 - `SECRET_KEY` is never hardcoded. In development a random key is generated in `data/.jwt_secret` (mode 600, git-ignored).
   In production (`ENV=production`) the API refuses to start unless a key of at least 32 bytes is provided, and it rejects
   the key published in v1.0.
+- No password is stored in the repository. Demo persona passwords are generated per installation in
+  `data/.demo_credentials.json` (mode 600, git-ignored), or taken from `DEMO_*_PASSWORD`. Existing demo accounts whose
+  hash does not match the configured password (for example the retired v1.0 defaults) are re-hashed on startup.
 - Demo accounts are created only outside production, or in production when `DEMO_MODE=true` and every
   `DEMO_*_PASSWORD` is set explicitly.
+- The retired v1.0 signing key is blocklisted by its SHA-256 digest only, so the value itself no longer appears in
+  the source. A regression test fails if any tracked file contains it or the retired default passwords.
 - Docker images contain no secrets; inject them at runtime.
 
 ## Deployment checklist

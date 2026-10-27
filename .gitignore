@@ -64,6 +64,7 @@ data/*.db-shm
 data/*.sqlite
 data/*.sqlite3
 data/.jwt_secret
+data/.demo_credentials.json
 
 # OS metadata
 .DS_Store

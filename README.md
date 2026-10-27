@@ -147,14 +147,18 @@ On first run a random JWT signing key is written to `data/.jwt_secret` (mode 600
 
 ### Demo personas (local development only)
 
-| Username | Password | Tenant | Role |
-| :--- | :--- | :--- | :--- |
-| `analyst_alpha` | `password123` | tenant_alpha | Procurement specialist |
-| `cpo_alpha` | `cposecurepass` | tenant_alpha | CPO (approvals above $25k, audit access) |
-| `auditor_alpha` | `auditorpass123` | tenant_alpha | Auditor (read-only, audit access) |
-| `hacker_beta` | `evilpass123` | tenant_beta | Cross-tenant attacker persona for BOLA tests |
+| Username | Tenant | Role |
+| :--- | :--- | :--- |
+| `analyst_alpha` | tenant_alpha | Procurement specialist |
+| `cpo_alpha` | tenant_alpha | CPO (approvals above $25k, audit access) |
+| `auditor_alpha` | tenant_alpha | Auditor (read-only, audit access) |
+| `hacker_beta` | tenant_beta | Cross-tenant attacker persona for BOLA tests |
 
-These defaults exist only so the demo runs with zero setup. With `ENV=production` no demo users are created unless `DEMO_MODE=true` **and** every `DEMO_*_PASSWORD` is set explicitly.
+No password is stored in this repository. On first start the API generates a random password per persona in `data/.demo_credentials.json` (mode 600, git-ignored); the Streamlit control tower reads the same file, so its persona switcher logs in automatically. Open that file when you want to call the API from Swagger or cURL, or set `DEMO_ANALYST_PASSWORD`, `DEMO_CPO_PASSWORD`, `DEMO_AUDITOR_PASSWORD` and `DEMO_BETA_PASSWORD` to choose your own.
+
+Databases created by earlier versions are upgraded automatically: demo accounts that still use the old publicly documented passwords are rotated to the new per-install passwords on startup.
+
+With `ENV=production` no demo users are created unless `DEMO_MODE=true` **and** every `DEMO_*_PASSWORD` is set explicitly.
 
 ### Docker (production mode)
 
