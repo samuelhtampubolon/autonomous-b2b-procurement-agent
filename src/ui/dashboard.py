@@ -1,17 +1,28 @@
 """Streamlit Executive Control Tower & HITL Review Dashboard.
 
 Provides real-time visibility into BPMN reconciliation states,
-Human-in-the-Loop exception approvals, and Unit Economics ROI ledgers.
+Human-in-the-Loop exception approvals, Unit Economics ROI ledgers, and the
+tamper-evident audit ledger.
+
+Security notes:
+- Every value that originates from the API (vendor names, clause text, notes) is
+  HTML-escaped before it is placed inside `unsafe_allow_html` blocks (stored XSS defense).
+- Access tokens live in per-browser-session `st.session_state`, never in the
+  process-wide `st.cache_data` store shared by all viewers.
+- No third-party assets are loaded, so the dashboard runs fully offline.
 """
 
 from __future__ import annotations
 
+import html
 import os
-from datetime import datetime, timezone
+import time
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional
+
+import plotly.graph_objects as go
 import requests
 import streamlit as st
-import plotly.graph_objects as go
-import plotly.express as px
 
 # Streamlit Page Setup
 st.set_page_config(
@@ -24,10 +35,8 @@ st.set_page_config(
 # Custom High-End Enterprise CSS
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
-    
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     }
     
     .stApp {
@@ -104,33 +113,52 @@ API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 # Sidebar Authentication & Tenant Switching
 # ---------------------------------------------------------------------------
 
-st.sidebar.image("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80", use_container_width=True)
-st.sidebar.title("Procurement AI")
+st.sidebar.title("🛡️ Procurement AI")
 st.sidebar.caption("Autonomous B2B Supply Chain Agent")
 
-# Preset Accounts for easy testing
+REQUEST_TIMEOUT = 5
+
+
+def esc(value: Any) -> str:
+    """HTML-escape API-sourced values before embedding them in raw HTML."""
+    return html.escape(str(value), quote=True)
+
+
+# Local demo personas (seeded only when DEMO_MODE is on). Passwords can be overridden
+# with the same DEMO_*_PASSWORD variables the API uses for seeding.
 PRESETS = {
-    "Analyst (Tenant Alpha)": ("analyst_alpha", "password123"),
-    "CPO (Tenant Alpha)": ("cpo_alpha", "cposecurepass"),
-    "Attacker (Tenant Beta)": ("hacker_beta", "evilpass123"),
+    "Analyst (Tenant Alpha)": ("analyst_alpha", os.getenv("DEMO_ANALYST_PASSWORD", "password123")),
+    "CPO (Tenant Alpha)": ("cpo_alpha", os.getenv("DEMO_CPO_PASSWORD", "cposecurepass")),
+    "Auditor (Tenant Alpha, read-only)": ("auditor_alpha", os.getenv("DEMO_AUDITOR_PASSWORD", "auditorpass123")),
+    "Attacker (Tenant Beta)": ("hacker_beta", os.getenv("DEMO_BETA_PASSWORD", "evilpass123")),
 }
 
 user_choice = st.sidebar.selectbox("Active Persona / Tenant", list(PRESETS.keys()))
 username, password = PRESETS[user_choice]
 
-@st.cache_data(ttl=600, show_spinner=False)
-def get_auth_token(user: str, pwd: str):
+
+def get_auth_token(user: str, pwd: str) -> Optional[Dict[str, Any]]:
+    """Return a valid token for this browser session, logging in again only when needed."""
+    tokens: Dict[str, Dict[str, Any]] = st.session_state.setdefault("tokens", {})
+    cached = tokens.get(user)
+    if cached and cached["expires_at"] > time.time() + 60:
+        return cached
     try:
         res = requests.post(
             f"{API_URL}/api/v1/auth/token",
             json={"username": user, "password": pwd},
-            timeout=5,
+            timeout=REQUEST_TIMEOUT,
         )
-        if res.status_code == 200:
-            return res.json()
+    except requests.RequestException:
         return None
-    except Exception:
+    if res.status_code != 200:
         return None
+    data = res.json()
+    data["sub"] = user
+    data["expires_at"] = time.time() + data["expires_in_minutes"] * 60
+    tokens[user] = data
+    return data
+
 
 token_data = get_auth_token(username, password)
 
@@ -143,8 +171,23 @@ else:
 
 navigation = st.sidebar.radio(
     "Navigation",
-    ["Executive ROI Control Tower", "Interactive 3-Way Match", "HITL Review Queue", "Contract RAG Explorer", "Security & BOLA Defense"],
+    [
+        "Executive ROI Control Tower",
+        "Interactive 3-Way Match",
+        "HITL Review Queue",
+        "Contract RAG Explorer",
+        "Audit Ledger (Tamper-Evident)",
+        "Security & BOLA Defense",
+    ],
 )
+
+if token_data and st.sidebar.button("Sign out (revoke token)"):
+    try:
+        requests.post(f"{API_URL}/api/v1/auth/logout", headers=headers, timeout=REQUEST_TIMEOUT)
+    except requests.RequestException:
+        pass
+    st.session_state.get("tokens", {}).pop(username, None)
+    st.rerun()
 
 # ---------------------------------------------------------------------------
 # Helper API Fetchers
@@ -152,7 +195,7 @@ navigation = st.sidebar.radio(
 
 def fetch_roi_metrics():
     try:
-        r = requests.get(f"{API_URL}/api/v1/metrics/roi", headers=headers, timeout=5)
+        r = requests.get(f"{API_URL}/api/v1/metrics/roi", headers=headers, timeout=REQUEST_TIMEOUT)
         return r.json() if r.status_code == 200 else None
     except Exception:
         return None
@@ -162,14 +205,14 @@ def fetch_invoices(status_filter=None):
         params = {"limit": 100}
         if status_filter:
             params["routing_status"] = status_filter
-        r = requests.get(f"{API_URL}/api/v1/invoices", headers=headers, params=params, timeout=5)
+        r = requests.get(f"{API_URL}/api/v1/invoices", headers=headers, params=params, timeout=REQUEST_TIMEOUT)
         return r.json() if r.status_code == 200 else []
     except Exception:
         return []
 
 def fetch_pos():
     try:
-        r = requests.get(f"{API_URL}/api/v1/purchase-orders", headers=headers, timeout=5)
+        r = requests.get(f"{API_URL}/api/v1/purchase-orders", headers=headers, timeout=REQUEST_TIMEOUT)
         return r.json() if r.status_code == 200 else []
     except Exception:
         return []
@@ -245,7 +288,7 @@ if navigation == "Executive ROI Control Tower":
                 showlegend=True,
                 margin=dict(t=20, b=20, l=20, r=20),
             )
-            st.plotly_chart(donut_fig, use_container_width=True)
+            st.plotly_chart(donut_fig, width="stretch")
 
         with col_chart2:
             st.subheader("Unit Economics: Value Generated vs AI Cost")
@@ -269,7 +312,7 @@ if navigation == "Executive ROI Control Tower":
                 yaxis=dict(gridcolor="rgba(148, 163, 184, 0.1)"),
                 margin=dict(t=20, b=20, l=20, r=20),
             )
-            st.plotly_chart(bar_fig, use_container_width=True)
+            st.plotly_chart(bar_fig, width="stretch")
 
 
 # ---------------------------------------------------------------------------
@@ -312,8 +355,11 @@ elif navigation == "Interactive 3-Way Match":
 
         if st.button("🚀 Run Deterministic 3-Way Reconciliation", type="primary"):
             exp_date = datetime.fromisoformat(selected_po["expected_delivery_date"].replace("Z", "+00:00"))
-            from datetime import timedelta
-            actual_delivery_date = exp_date + timedelta(days=days_delay)
+            if exp_date.tzinfo is None:
+                exp_date = exp_date.replace(tzinfo=timezone.utc)
+            actual_delivery_date = min(
+                exp_date + timedelta(days=days_delay), datetime.now(timezone.utc)
+            )
 
             payload = {
                 "po_number": selected_po["po_number"],
@@ -325,7 +371,7 @@ elif navigation == "Interactive 3-Way Match":
             }
 
             try:
-                res = requests.post(f"{API_URL}/api/v1/invoices/reconcile", json=payload, headers=headers, timeout=5)
+                res = requests.post(f"{API_URL}/api/v1/invoices/reconcile", json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
                 if res.status_code == 201:
                     data = res.json()
                     st.success(f"Reconciliation Complete in {data['inference_latency_ms']} ms! Tokens Consumed: {data['tokens_consumed']}")
@@ -345,6 +391,19 @@ elif navigation == "Interactive 3-Way Match":
                     else:
                         st.markdown(f'<div class="badge-hitl" style="display:inline-block; margin-top:10px;">STATUS: ROUTED TO HITL APPROVAL QUEUE</div>', unsafe_allow_html=True)
                     st.info(f"**Decision Reason**: {data['routing_reason']}")
+                    risk = data.get("risk_assessment", {})
+                    if risk.get("risk_flags"):
+                        st.warning(
+                            "Risk screening flagged this invoice: "
+                            + ", ".join(risk["risk_flags"])
+                            + ". It has been held for human review."
+                        )
+                        if risk.get("sanitized_vendor_notes"):
+                            st.code(risk["sanitized_vendor_notes"], language="text")
+                elif res.status_code == 409:
+                    st.error("Duplicate invoice number: this invoice was already submitted. Use a new invoice number.")
+                elif res.status_code == 403:
+                    st.error("Your role is read-only and cannot submit invoices.")
                 else:
                     st.error(f"Reconciliation error ({res.status_code}): {res.text}")
             except Exception as e:
@@ -366,6 +425,8 @@ elif navigation == "HITL Review Queue":
         st.write(f"Pending Exception Items: **{len(invoices)}**")
         for inv in invoices:
             with st.expander(f"⚠️ #{inv['invoice_number']} | {inv['vendor_name']} | PO: {inv['po_number']} | Subtotal: ${inv['subtotal_usd']:,.2f} | Variance: {inv['variance_pct']:+.2f}%"):
+                if inv.get("risk_flags"):
+                    st.error("Security / fraud signals: " + ", ".join(inv["risk_flags"]))
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     st.write(f"**Invoice ID**: `{inv['id']}`")
@@ -388,12 +449,13 @@ elif navigation == "HITL Review Queue":
                             f"{API_URL}/api/v1/invoices/{inv['id']}/decision",
                             json={"decision": "APPROVE", "reviewer_notes": notes},
                             headers=headers,
+                            timeout=REQUEST_TIMEOUT,
                         )
                         if res.status_code == 200:
                             st.success("Invoice Approved!")
                             st.rerun()
                         else:
-                            st.error(res.text)
+                            st.error(res.json().get("detail", res.text))
 
                 with b_col2:
                     if st.button("❌ Reject", key=f"rej_{inv['id']}"):
@@ -401,12 +463,13 @@ elif navigation == "HITL Review Queue":
                             f"{API_URL}/api/v1/invoices/{inv['id']}/decision",
                             json={"decision": "REJECT", "reviewer_notes": notes or "Discrepancy rejected by specialist"},
                             headers=headers,
+                            timeout=REQUEST_TIMEOUT,
                         )
                         if res.status_code == 200:
                             st.warning("Invoice Rejected & Sent Back to Vendor")
                             st.rerun()
                         else:
-                            st.error(res.text)
+                            st.error(res.json().get("detail", res.text))
 
 
 # ---------------------------------------------------------------------------
@@ -426,6 +489,7 @@ elif navigation == "Contract RAG Explorer":
                 f"{API_URL}/api/v1/contracts/search",
                 json={"query": query, "top_k": top_k},
                 headers=headers,
+                timeout=REQUEST_TIMEOUT,
             )
             if res.status_code == 200:
                 clauses = res.json()
@@ -435,11 +499,11 @@ elif navigation == "Contract RAG Explorer":
                     st.markdown(f"""
                     <div class="metric-card" style="margin-bottom: 15px;">
                         <div style="display:flex; justify-content:space-between;">
-                            <span class="badge-auto">{cl['clause_category']}</span>
-                            <span style="color:#38BDF8; font-size:0.85rem;">Similarity: {cl['similarity_score'] * 100:.1f}%</span>
+                            <span class="badge-auto">{esc(cl['clause_category'])}</span>
+                            <span style="color:#38BDF8; font-size:0.85rem;">Similarity: {float(cl['similarity_score']) * 100:.1f}%</span>
                         </div>
-                        <h4 style="margin: 10px 0 5px 0;">{cl['title']} ({cl['vendor_name']})</h4>
-                        <p style="color: #CBD5E1; font-size: 0.95rem; line-height: 1.5;">{cl['content']}</p>
+                        <h4 style="margin: 10px 0 5px 0;">{esc(cl['title'])} ({esc(cl['vendor_name'])})</h4>
+                        <p style="color: #CBD5E1; font-size: 0.95rem; line-height: 1.5;">{esc(cl['content'])}</p>
                     </div>
                     """, unsafe_allow_html=True)
             else:
@@ -449,7 +513,54 @@ elif navigation == "Contract RAG Explorer":
 
 
 # ---------------------------------------------------------------------------
-# View 5: Security & BOLA Defense
+# View 5: Tamper-Evident Audit Ledger
+# ---------------------------------------------------------------------------
+
+elif navigation == "Audit Ledger (Tamper-Evident)":
+    st.title("🔗 Tamper-Evident Audit Ledger")
+    st.markdown(
+        "Every agent and human action is sealed into a per-tenant SHA-256 hash chain. "
+        "Editing, deleting, or reordering any historic entry breaks the chain."
+    )
+
+    verify = requests.get(f"{API_URL}/api/v1/audit/verify", headers=headers, timeout=REQUEST_TIMEOUT)
+    if verify.status_code == 403:
+        st.warning("Only the CPO and Auditor roles may read the audit ledger. Switch persona in the sidebar.")
+    elif verify.status_code != 200:
+        st.error("Could not verify the audit ledger.")
+    else:
+        result = verify.json()
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Chain Status", "INTACT" if result["valid"] else "TAMPERED")
+        c2.metric("Sealed Entries", f"{result['verified_entries']} / {result['total_entries']}")
+        c3.metric("Head Hash", result["head_hash"][:16] + "…")
+        if result["valid"]:
+            st.success(result["reason"])
+        else:
+            st.error(f"{result['reason']} (first invalid entry #{result['first_invalid_entry_id']})")
+
+        logs = requests.get(
+            f"{API_URL}/api/v1/audit/logs", headers=headers, params={"limit": 50}, timeout=REQUEST_TIMEOUT
+        )
+        if logs.status_code == 200:
+            rows = [
+                {
+                    "id": entry["id"],
+                    "action": entry["action_taken"],
+                    "actor": entry.get("actor") or "",
+                    "invoice": entry.get("invoice_id"),
+                    "details": entry["details"],
+                    "prev_hash": (entry.get("prev_hash") or "")[:12],
+                    "entry_hash": (entry.get("entry_hash") or "")[:12],
+                    "created_at": entry["created_at"][:19],
+                }
+                for entry in logs.json()
+            ]
+            st.dataframe(rows, width="stretch", hide_index=True)
+
+
+# ---------------------------------------------------------------------------
+# View 6: Security & BOLA Defense
 # ---------------------------------------------------------------------------
 
 elif navigation == "Security & BOLA Defense":
@@ -468,7 +579,7 @@ elif navigation == "Security & BOLA Defense":
 
     if st.button("⚔️ Probe Resource Ownership"):
         try:
-            res = requests.get(f"{API_URL}/api/v1/invoices/{target_id}", headers=headers)
+            res = requests.get(f"{API_URL}/api/v1/invoices/{int(target_id)}", headers=headers, timeout=REQUEST_TIMEOUT)
             if res.status_code == 200:
                 inv = res.json()
                 st.success(f"Access Allowed: Invoice #{inv['invoice_number']} belongs to your tenant (`{inv['tenant_id']}`).")

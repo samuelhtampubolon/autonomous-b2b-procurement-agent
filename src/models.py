@@ -21,8 +21,12 @@ from src.database import Base
 
 
 def utc_now() -> datetime:
-    """Deterministic UTC timestamp factory."""
-    return datetime.now(timezone.utc)
+    """Naive UTC timestamp factory.
+
+    Timestamps are stored as naive UTC so SQLite and PostgreSQL round-trip identical
+    values, which keeps the audit ledger's hash chain verifiable across backends.
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class User(Base):
@@ -111,19 +115,29 @@ class Invoice(Base):
     approved_by = Column(String(128), nullable=True)
     rejection_reason = Column(String(255), nullable=True)
     vendor_notes = Column(Text, nullable=True)
+    # Comma-separated threat rules raised by the prompt-injection firewall / fraud checks
+    risk_flags = Column(String(255), nullable=True)
+    decided_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utc_now, nullable=False)
 
     # Relationships
     purchase_order = relationship("PurchaseOrder", back_populates="invoices")
-    audit_logs = relationship("AgentAuditLog", back_populates="invoice")
+    audit_logs = relationship("AgentAuditLog", back_populates="invoice", passive_deletes=True)
 
     __table_args__ = (
         Index("ix_invoices_tenant_routing", "tenant_id", "routing_status"),
+        # Duplicate-invoice fraud control: one invoice number per tenant.
+        Index("uq_invoices_tenant_number", "tenant_id", "invoice_number", unique=True),
     )
 
 
 class AgentAuditLog(Base):
-    """Immutable audit trail of AI agent reconciliation actions and unit economics."""
+    """Append-only, hash-chained audit trail of agent actions and unit economics.
+
+    Each entry stores `prev_hash` (the previous entry of the same tenant) and
+    `entry_hash = SHA-256(prev_hash || canonical_json(entry))`, so editing or deleting
+    any historic row breaks the chain and is detected by `/api/v1/audit/verify`.
+    """
 
     __tablename__ = "agent_audit_logs"
 
@@ -135,6 +149,9 @@ class AgentAuditLog(Base):
     tokens_used = Column(Integer, default=0, nullable=False)
     compute_cost_usd = Column(Float, default=0.0, nullable=False)
     labor_saved_usd = Column(Float, default=0.0, nullable=False)
+    actor = Column(String(128), nullable=True)
+    prev_hash = Column(String(64), nullable=True)
+    entry_hash = Column(String(64), nullable=True, index=True)
     created_at = Column(DateTime, default=utc_now, nullable=False)
 
     # Relationships

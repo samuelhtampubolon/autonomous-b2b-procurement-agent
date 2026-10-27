@@ -130,7 +130,12 @@ def test_security_headers_injection():
     res = client.get("/healthz")
     assert res.headers.get("X-Content-Type-Options") == "nosniff"
     assert res.headers.get("X-Frame-Options") == "DENY"
-    assert res.headers.get("X-XSS-Protection") == "1; mode=block"
+    # Legacy XSS auditor disabled per current OWASP guidance; CSP is the real control.
+    assert res.headers.get("X-XSS-Protection") == "0"
+    assert "default-src 'none'" in res.headers.get("Content-Security-Policy", "")
+    assert res.headers.get("Referrer-Policy") == "no-referrer"
+    assert res.headers.get("Cache-Control") == "no-store"
+    assert res.headers.get("X-Request-ID")
     assert "Server" not in res.headers
 
 

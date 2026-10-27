@@ -7,12 +7,17 @@ Governed by enterprise equations:
 
 from __future__ import annotations
 
+import re
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from src.config import settings
 from src.models import AgentAuditLog, Invoice
 from src.schemas import ROIMetricsResponse
+
+_LATENCY_RE = re.compile(r"Latency: ([0-9]+(?:\.[0-9]+)?)ms")
+BASELINE_LATENCY_MS = 45.0
 
 
 def calculate_tenant_roi(tenant_id: str, db: Session) -> ROIMetricsResponse:
@@ -80,8 +85,15 @@ def calculate_tenant_roi(tenant_id: str, db: Session) -> ROIMetricsResponse:
         total_benefit / max(total_ai_opex, 0.01), 2
     )
 
-    # Extract latency average from audit logs details
-    avg_latency = 45.0  # Default deterministic baseline in ms
+    # Average measured latency of live reconciliations (seeded history has none recorded)
+    latencies = [
+        float(m.group(1))
+        for (details,) in db.query(AgentAuditLog.details)
+        .filter(AgentAuditLog.tenant_id == tenant_id, AgentAuditLog.action_taken.like("RECONCILE_%"))
+        .all()
+        if (m := _LATENCY_RE.search(details or ""))
+    ]
+    avg_latency = round(sum(latencies) / len(latencies), 2) if latencies else BASELINE_LATENCY_MS
 
     return ROIMetricsResponse(
         total_invoices_processed=total_invoices,
