@@ -54,3 +54,35 @@
 - **Consequences**:
   - Instant one-command launch via `python run_local.py`.
   - Zero configuration or environment variable tuning required.
+
+---
+
+### ADR-006: Security Hardening Baseline (v1.1)
+- **Status**: Accepted
+- **Context**: v1.0 shipped a hardcoded JWT secret, relied on passlib (which breaks with bcrypt 4.1 and newer), had no role model, allowed an invoice to be decided repeatedly, and returned validation errors that echoed submitted passwords.
+- **Decision**: Generate per-install signing keys and require an explicit strong key in production; use bcrypt directly with constant-time login and per-account lockout; require `iss`/`aud`/`jti`/`nbf`/`typ` claims and support revocation; introduce RBAC (`procurement_specialist`, `cpo`, `auditor`) with CPO sign-off above $25k; make HITL decisions an atomic compare-and-set; reject duplicate invoice numbers; cap request bodies at 1 MB; add CSP and related headers, a Host allow-list, and non-reflective error bodies.
+- **Consequences**: Production deployments fail fast on insecure configuration. 40 additional tests cover the controls. Throttling and revocation state is per process (see SECURITY.md).
+
+---
+
+### ADR-007: Hash-Chained, Append-Only Audit Ledger
+- **Status**: Accepted
+- **Context**: "Immutable audit log" in v1.0 was a convention only; any database user could edit history undetected.
+- **Decision**: Each `AgentAuditLog` row stores `prev_hash` and `entry_hash = SHA-256(prev_hash || canonical_json(entry))`, chained per tenant. An ORM `before_update` guard and a SQLite trigger block edits; `/api/v1/audit/verify` recomputes the chain and reports the first invalid entry. Legacy rows are sealed once during upgrade.
+- **Consequences**: Tampering is detectable even by someone who bypasses the application. Timestamps are stored as naive UTC so hashes are identical across SQLite and PostgreSQL.
+
+---
+
+### ADR-008: Prompt-Injection Firewall Forces Human Review
+- **Status**: Accepted
+- **Context**: Vendor remarks are attacker-controlled and are destined for contract analysis and LLM prompts.
+- **Decision**: Normalize (NFKC), strip control, zero-width and bidi-override characters, then redact 14 rule families (instruction override, role spoofing, chat-template tokens, persona and approval override, secret exfiltration, markup). Any flag adds a security-hold reason, so the invoice can never be auto-approved.
+- **Consequences**: A successful injection cannot move money without a human. Some benign text (for example "Contact our developer: ...") may be held for review; this is the intended fail-safe direction.
+
+---
+
+### ADR-009: Static Showcase Mirrors the Engine and Is Parity-Tested
+- **Status**: Accepted
+- **Context**: The GitHub Pages demo previously re-implemented rules by hand and drifted from the backend (for example a $28.5k "clean" preset that the API would route to HITL).
+- **Decision**: `docs/assets/js/engine.js` ports `compute_match`, `assess_untrusted_text`, the TF-IDF RAG and the ledger hash. `tests/test_docs_parity.py` executes it under Node and compares outputs with Python. The page runs under a strict CSP with Trusted Types and builds all DOM without `innerHTML`.
+- **Consequences**: Any rule change that is not mirrored in the site fails CI.

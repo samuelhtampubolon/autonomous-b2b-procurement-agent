@@ -1,19 +1,15 @@
 # Autonomous B2B Supply Chain & Procurement Agent
-# Production-ready pinned dependencies
+# Runtime dependencies (bounded ranges; floors chosen above known CVE fixes)
 
-fastapi>=0.115.0,<0.116.0
+fastapi>=0.162.0,<1.0.0
+starlette>=1.3.1,<2.0.0        # pip-audit clean: fixes all PYSEC advisories open against 0.4x
 uvicorn[standard]>=0.30.0,<1.0.0
-starlette>=0.40.0,<0.46.0
 pydantic>=2.10.0,<3.0.0
-pydantic-settings>=2.0.0,<3.0.0
 sqlalchemy>=2.0.0,<3.0.0
 slowapi>=0.1.9,<0.2.0
-pyjwt>=2.9.0,<3.0.0
-passlib[bcrypt]>=1.7.4,<2.0.0
-python-multipart>=0.0.9,<0.1.0
-streamlit>=1.38.0,<2.0.0
+pyjwt>=2.10.1,<3.0.0           # >=2.10.1 fixes CVE-2024-53861 (issuer check bypass)
+bcrypt>=4.1.0,<6.0.0           # direct bcrypt (passlib is unmaintained and breaks on bcrypt>=4.1)
+streamlit>=1.50.0,<2.0.0
 plotly>=5.24.0,<6.0.0
-requests>=2.31.0,<3.0.0
-pytest>=8.0.0,<10.0.0
-pytest-asyncio>=0.23.0,<2.0.0
-httpx>=0.27.0,<0.29.0
+requests>=2.32.4,<3.0.0        # >=2.32.4 fixes CVE-2024-47081 (.netrc credential leak)
+httpx>=0.27.0,<0.29.0          # used by FastAPI TestClient in `run_local.py --check`

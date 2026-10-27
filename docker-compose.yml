@@ -1,22 +1,43 @@
-version: '3.8'
+# Usage:
+#   export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(64))')"
+#   docker compose up --build
+# The API refuses to start in production mode without a strong SECRET_KEY.
+
+x-hardening: &hardening
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  tmpfs:
+    - /tmp
 
 services:
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+    <<: *hardening
+    command: ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-server-header"]
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
-      - ENV=production
-      - DATABASE_URL=sqlite:///./data/procurement_local.db
-      - SECRET_KEY=b2b-procurement-agent-enterprise-secret-key-hs256-deterministic-2026
+      ENV: production
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY to a random value of at least 32 bytes}
+      DATABASE_URL: sqlite:////app/data/procurement_local.db
+      TRUSTED_HOSTS: 127.0.0.1,localhost,api
+      CORS_ORIGINS: http://127.0.0.1:8501,http://localhost:8501
+      # Demo personas are opt-in in production and require explicit passwords.
+      DEMO_MODE: ${DEMO_MODE:-false}
+      DEMO_ANALYST_PASSWORD: ${DEMO_ANALYST_PASSWORD:-}
+      DEMO_CPO_PASSWORD: ${DEMO_CPO_PASSWORD:-}
+      DEMO_AUDITOR_PASSWORD: ${DEMO_AUDITOR_PASSWORD:-}
+      DEMO_BETA_PASSWORD: ${DEMO_BETA_PASSWORD:-}
     volumes:
       - db_data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -25,16 +46,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: streamlit run src/ui/dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+    <<: *hardening
+    command: ["python", "-m", "streamlit", "run", "src/ui/dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0", "--server.headless", "true", "--browser.gatherUsageStats", "false", "--server.enableXsrfProtection", "true"]
     ports:
-      - "8501:8501"
+      - "127.0.0.1:8501:8501"
     environment:
-      - API_URL=http://api:8000
+      API_URL: http://api:8000
+      HOME: /tmp
+      DEMO_ANALYST_PASSWORD: ${DEMO_ANALYST_PASSWORD:-}
+      DEMO_CPO_PASSWORD: ${DEMO_CPO_PASSWORD:-}
+      DEMO_AUDITOR_PASSWORD: ${DEMO_AUDITOR_PASSWORD:-}
+      DEMO_BETA_PASSWORD: ${DEMO_BETA_PASSWORD:-}
     depends_on:
       api:
         condition: service_healthy
-    volumes:
-      - db_data:/app/data
     restart: unless-stopped
 
 volumes:

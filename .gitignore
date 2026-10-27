@@ -56,10 +56,14 @@ ENV/
 env.bak/
 venv.bak/
 
-# SQLite databases (local persistence only)
+# Local runtime data: SQLite databases and the generated JWT signing key
 data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
 data/*.sqlite
 data/*.sqlite3
+data/.jwt_secret
 
 # OS metadata
 .DS_Store
