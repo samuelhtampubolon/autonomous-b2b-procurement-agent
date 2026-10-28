@@ -57,6 +57,11 @@ services:
       DEMO_CPO_PASSWORD: ${DEMO_CPO_PASSWORD:-}
       DEMO_AUDITOR_PASSWORD: ${DEMO_AUDITOR_PASSWORD:-}
       DEMO_BETA_PASSWORD: ${DEMO_BETA_PASSWORD:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
     depends_on:
       api:
         condition: service_healthy

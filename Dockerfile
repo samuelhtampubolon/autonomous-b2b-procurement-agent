@@ -1,7 +1,10 @@
 # syntax=docker/dockerfile:1
 FROM python:3.11-slim AS runtime
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
+# Secure by default: production mode refuses to start without a strong SECRET_KEY,
+# disables /docs, and creates no demo accounts unless explicitly configured.
+ENV ENV=production \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1

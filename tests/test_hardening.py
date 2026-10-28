@@ -110,6 +110,18 @@ def test_no_hardcoded_secrets_in_repository():
             assert len(word) < 32 or not is_known_leaked_secret(word), f"{rel} contains a leaked signing key"
 
 
+def test_workflow_actions_are_pinned_to_commit_shas():
+    """Supply-chain guard: third-party actions must reference immutable commit SHAs."""
+    import re
+    from pathlib import Path
+
+    workflows = Path(__file__).resolve().parent.parent / ".github" / "workflows"
+    uses = re.findall(r"uses:\s*([^\s#]+)", "".join(p.read_text() for p in workflows.glob("*.yml")))
+    assert uses
+    for ref in uses:
+        assert re.fullmatch(r"[\w.-]+/[\w./-]+@[0-9a-f]{40}", ref), f"unpinned action: {ref}"
+
+
 def test_demo_users_rotate_away_from_legacy_passwords():
     from src.database import SessionLocal
     from src.models import User
