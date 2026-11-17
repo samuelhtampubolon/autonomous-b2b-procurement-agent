@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.11-slim AS runtime
+FROM python:3.15-slim AS runtime
 
 # Secure by default: production mode refuses to start without a strong SECRET_KEY,
 # disables /docs, and creates no demo accounts unless explicitly configured.
